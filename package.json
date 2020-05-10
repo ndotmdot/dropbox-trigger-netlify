@@ -1,0 +1,30 @@
+{
+  "name": "dropbox-trigger-netlify",
+  "version": "0.0.1",
+  "description": "",
+  "author": "Niklas May <post@niklas-may.de>",
+  "main": "index.js",
+  "dependencies": {
+    "@babel/preset-env": "^7.0.0",
+    "@babel/runtime": "^7.0.0",
+    "dropbox": "^4.0.30",
+    "isomorphic-fetch": "^2.2.1"
+  },
+  "scripts": {
+    "build": "babel src --out-dir . --ignore **/__tests__",
+    "watch": "babel -w src --out-dir . --ignore **/__tests__"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ndotmdot/dropbox-trigger-netlify.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ndotmdot/dropbox-trigger-netlify/issues"
+  },
+  "homepage": "https://github.com/ndotmdot/dropbox-trigger-netlify#readme"
+}
