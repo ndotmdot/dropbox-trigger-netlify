@@ -36,3 +36,7 @@ coverage
 decls
 example
 .vscode
+.prettierignore
+.prettierrc
+.babelrc
+.env

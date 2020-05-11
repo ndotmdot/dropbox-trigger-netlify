@@ -1,0 +1,10 @@
+{
+  "name": "functions",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "dropbox": "^4.0.30",
+    "node-fetch": "^2.6.0"
+  }
+}

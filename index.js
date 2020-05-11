@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = handleEvent;
+exports.handleEvent = handleEvent;
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -22,9 +22,9 @@ const fetch = require('isomorphic-fetch'); // or another library of choice.
 
 let buildInProgress = false;
 const defaultConfig = {
-  buildHook: "",
   dropboxToken: "",
-  dropboxBuildFolder: "/_Update"
+  dropboxBuildFolder: "/_Update",
+  buildHook: ""
 };
 let config = {}; // Netlify Functions
 // ————————————————————————————————————————————————————

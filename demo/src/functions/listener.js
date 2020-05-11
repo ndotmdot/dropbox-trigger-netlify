@@ -1,15 +1,10 @@
+require('dotenv').config({ path: '.env' });
 const Dropbox = require("dropbox/dist/Dropbox-sdk.min").Dropbox;
 const fetch = require('isomorphic-fetch'); // or another library of choice.
 
 let buildInProgress = false
-
-const defaultConfig = {
-  dropboxToken: "",
-  dropboxBuildFolder: "/_Update",
-  buildHook: "",
-}
-
-let config = {}
+// const buildHook = process.env.NODE_ENV == "development" ? process.env.MOCK_BUILD_HOOK : process.env.NETLIFY_BUILD_HOOK
+const buildHook = process.env.NETLIFY_BUILD_HOOK
 
 // Netlify Functions
 // ————————————————————————————————————————————————————
@@ -17,7 +12,7 @@ let config = {}
 async function callBuildHook() {
   console.log("### Calling netlify buildhook")
 
-  await fetch(`${config.buildHook}`, {
+  await fetch(`${buildHook}`, {
     method: 'post',
     body:    JSON.stringify({}),
     headers: { 'Content-Type': 'application/json' },
@@ -34,8 +29,8 @@ async function listFiles(dbx, path) {
 }
 
 async function attemptBuild() {
-  var dbx = new Dropbox({ accessToken: `${config.dropboxToken}`, fetch: fetch });
-  const files = await listFiles(dbx, `${config.dropboxBuildFolder}`)
+  var dbx = new Dropbox({ accessToken: `${process.env.DROPBOX_TOKEN}`, fetch: fetch });
+  const files = await listFiles(dbx, `${process.env.DROPBOX_BUILD_FOLDER}`)
   const hasFiles = files.entries.length > 0 && true
   
   console.log("### Files in build folder? ", hasFiles)
@@ -64,7 +59,7 @@ async function moveFiles(dbx, entries){
   })  
 
   const { async_job_id } = response  
-
+  
   if (async_job_id) {  
     do {  
       response = await dbx.filesMoveBatchCheckV2({ async_job_id })  
@@ -80,9 +75,9 @@ async function moveFiles(dbx, entries){
 async function cleanUp() {
   buildInProgress = true
 
-  var dbx = new Dropbox({ accessToken: `${config.dropboxToken}`, fetch: fetch });
+  var dbx = new Dropbox({ accessToken: `${process.env.DROPBOX_TOKEN}`, fetch: fetch });
 
-  const files = await listFiles(dbx, `${config.dropboxBuildFolder}`)
+  const files = await listFiles(dbx, `${process.env.DROPBOX_BUILD_FOLDER}`)
   const hasFiles = files.entries.length > 0 && true
 
   if(hasFiles) {
@@ -93,8 +88,8 @@ async function cleanUp() {
     console.log("### No files to cleanup")
     buildInProgress = false
   }
-}
 
+}
 
 function getCaller(event) {
   const { headers } = event
@@ -105,9 +100,7 @@ function getCaller(event) {
   if(isNetlify) return `netlify`
 }
 
-export async function handleEvent(event, userConfig) {
-  config = {...defaultConfig, ...userConfig}
-
+async function handleEvent(event) {
   const caller = getCaller(event)
   console.log("### Call from: ", caller)
 
@@ -126,3 +119,18 @@ export async function handleEvent(event, userConfig) {
     await cleanUp()
   }
 }
+
+export async function handler(event, context, callback) {
+  const dbxWebHookChallenge = event.queryStringParameters.challenge
+  await handleEvent(event)
+  
+  callback(null, {
+    statusCode: 200,
+    body: dbxWebHookChallenge,
+  })
+}
+
+
+
+
+
