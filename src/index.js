@@ -106,6 +106,7 @@ function getCaller(event) {
 }
 
 export async function handleEvent(event, userConfig) {
+  console.log("handleEvent -> event", event)
   config = {...defaultConfig, ...userConfig}
 
   const caller = getCaller(event)
@@ -113,6 +114,7 @@ export async function handleEvent(event, userConfig) {
 
   if(caller === `dropbox`) {
     const dbxWebHookChallenge = event.queryStringParameters.challenge
+    console.log("handleEvent -> dbxWebHookChallenge", dbxWebHookChallenge)
 
     if(buildInProgress) {
       console.log("### Build already in progress. Aborting...")
