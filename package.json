@@ -1,10 +1,12 @@
 {
   "name": "dropbox-trigger-netlify",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Deploy your Gatsby site whenever a specific Dropbox folder is updated.",
   "author": "Niklas May <post@niklas-may.de>",
   "main": "index.js",
   "dependencies": {
+    "@babel/preset-env": "^7.0.0",
+    "@babel/runtime": "^7.0.0",
     "dropbox": "^4.0.30",
     "isomorphic-fetch": "^2.2.1"
   },
@@ -13,8 +15,6 @@
     "watch": "babel -w src --out-dir . --ignore **/__tests__"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.0.0",
-    "@babel/runtime": "^7.0.0",
     "@babel/cli": "^7.0.0",
     "@babel/core": "^7.0.0"
   },
