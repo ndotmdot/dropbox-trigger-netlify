@@ -95,11 +95,10 @@ async function cleanUp() {
   }
 }
 
-
 function getCaller(event) {
   const { headers } = event
-  const isDropbox = Object.keys(headers).some(key => key.includes(`dropbox`))
-  const isNetlify = Object.keys(headers).some(key => key.includes(`netlify`))
+  const isDropbox = JSON.stringify(headers).toLowerCase().includes('dropbox')
+  const isNetlify = JSON.stringify(headers).toLowerCase().includes('netlify')
   
   if(isDropbox) return `dropbox`
   if(isNetlify) return `netlify`

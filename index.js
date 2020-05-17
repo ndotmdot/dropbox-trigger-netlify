@@ -153,8 +153,8 @@ function _cleanUp() {
 
 function getCaller(event) {
   const headers = event.headers;
-  const isDropbox = Object.keys(headers).some(key => key.includes(`dropbox`));
-  const isNetlify = Object.keys(headers).some(key => key.includes(`netlify`));
+  const isDropbox = JSON.stringify(headers).toLowerCase().includes('dropbox');
+  const isNetlify = JSON.stringify(headers).toLowerCase().includes('netlify');
   if (isDropbox) return `dropbox`;
   if (isNetlify) return `netlify`;
 }
@@ -165,12 +165,14 @@ function handleEvent(_x5, _x6) {
 
 function _handleEvent() {
   _handleEvent = _asyncToGenerator(function* (event, userConfig) {
+    console.log("handleEvent -> event", event);
     config = _objectSpread(_objectSpread({}, defaultConfig), userConfig);
     const caller = getCaller(event);
     console.log("### Call from: ", caller);
 
     if (caller === `dropbox`) {
       const dbxWebHookChallenge = event.queryStringParameters.challenge;
+      console.log("handleEvent -> dbxWebHookChallenge", dbxWebHookChallenge);
 
       if (buildInProgress) {
         console.log("### Build already in progress. Aborting...");
