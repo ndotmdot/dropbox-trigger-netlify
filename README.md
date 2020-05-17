@@ -47,20 +47,23 @@ To use this module, you need to setup Netlify Functions in your Gatsby site. If 
 Create a new function called `syncDropbox.js` and add the following code:
 
 ```javaScript
-require('dotenv').config({ path: '.env' });
 const dropboxTriggerNetlify = require('dropbox-trigger-netlify')
 
-export async function handler(event, context, callback) {
+exports.handler = async (event) => {
+  try {
 
-  const response = await dropboxTriggerNetlify.handleEvent(event, {
-    dropboxToken: process.env.DROPBOX_TOKEN,
-    buildHook: process.env.BUILD_HOOK,
-  })
-  
-  callback(null, {
-    statusCode: 200,
-    body: response,
-  })
+    const response = await dropboxTriggerNetlify.handleEvent(event, {
+      dropboxToken: process.env.DROPBOX_TOKEN,
+      buildHook: process.env.BUILD_HOOK,
+    })
+
+    return {
+      statusCode: 200,
+      body: response
+    }
+  } catch (err) {
+    return { statusCode: 500, body: err.toString() }
+  }
 }
 ```
 
