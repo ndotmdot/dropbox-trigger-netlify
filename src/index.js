@@ -17,7 +17,7 @@ let config = {}
 async function callBuildHook() {
   console.log("### Calling netlify buildhook")
 
-  await fetch(`${config.buildHook}`, {
+  return await fetch(`${config.buildHook}`, {
     method: 'post',
     body:    JSON.stringify({}),
     headers: { 'Content-Type': 'application/json' },
