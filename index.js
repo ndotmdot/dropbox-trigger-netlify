@@ -38,7 +38,7 @@ function callBuildHook() {
 function _callBuildHook() {
   _callBuildHook = _asyncToGenerator(function* () {
     console.log("### Calling netlify buildhook");
-    yield fetch(`${config.buildHook}`, {
+    return yield fetch(`${config.buildHook}`, {
       method: 'post',
       body: JSON.stringify({}),
       headers: {
@@ -165,14 +165,13 @@ function handleEvent(_x5, _x6) {
 
 function _handleEvent() {
   _handleEvent = _asyncToGenerator(function* (event, userConfig) {
-    console.log("handleEvent -> event", event);
     config = _objectSpread(_objectSpread({}, defaultConfig), userConfig);
+    console.log("handleEvent -> config", config);
     const caller = getCaller(event);
     console.log("### Call from: ", caller);
 
     if (caller === `dropbox`) {
       const dbxWebHookChallenge = event.queryStringParameters.challenge;
-      console.log("handleEvent -> dbxWebHookChallenge", dbxWebHookChallenge);
 
       if (buildInProgress) {
         console.log("### Build already in progress. Aborting...");
