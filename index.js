@@ -38,7 +38,7 @@ function callBuildHook() {
 function _callBuildHook() {
   _callBuildHook = _asyncToGenerator(function* () {
     console.log("### Calling netlify buildhook");
-    return yield fetch(`${config.buildHook}`, {
+    yield fetch(`${config.buildHook}`, {
       method: 'post',
       body: JSON.stringify({}),
       headers: {

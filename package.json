@@ -1,6 +1,6 @@
 {
   "name": "dropbox-trigger-netlify",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Deploy your Gatsby site whenever a specific Dropbox folder is updated.",
   "author": "Niklas May <post@niklas-may.de>",
   "main": "index.js",
