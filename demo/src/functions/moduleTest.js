@@ -6,7 +6,7 @@ export async function handler(event, context, callback) {
   const response = await dropboxTriggerNetlify.handleEvent(event, {
     dropboxToken: process.env.DROPBOX_TOKEN,
     dropboxBuildFolder: process.env.DROPBOX_BUILD_FOLDER,
-    buildHook: process.env.MOCK_BUILD_HOOK,
+    buildHook: process.env.NETLIFY_BUILD_HOOK,
   })
   
   callback(null, {

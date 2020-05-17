@@ -17,11 +17,12 @@ let config = {}
 async function callBuildHook() {
   console.log("### Calling netlify buildhook")
 
-  await fetch(`${config.buildHook}`, {
+  const res = await fetch(`${config.buildHook}`, {
     method: 'post',
-    body:    JSON.stringify({}),
     headers: { 'Content-Type': 'application/json' },
   })
+
+  console.log(`### Buildhook response Status: ${res.status}, ${res.statusText}`)
 }
 
 
@@ -107,7 +108,6 @@ function getCaller(event) {
 export async function handleEvent(event, userConfig) {
   config = {...defaultConfig, ...userConfig}
 
-  console.log("handleEvent -> config", config)
   const caller = getCaller(event)
   console.log("### Call from: ", caller)
 

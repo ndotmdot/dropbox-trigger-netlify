@@ -38,13 +38,13 @@ function callBuildHook() {
 function _callBuildHook() {
   _callBuildHook = _asyncToGenerator(function* () {
     console.log("### Calling netlify buildhook");
-    yield fetch(`${config.buildHook}`, {
+    const res = yield fetch(`${config.buildHook}`, {
       method: 'post',
-      body: JSON.stringify({}),
       headers: {
         'Content-Type': 'application/json'
       }
     });
+    console.log(`### Buildhook response Status: ${res.status}, ${res.statusText}`);
   });
   return _callBuildHook.apply(this, arguments);
 }
@@ -166,7 +166,6 @@ function handleEvent(_x5, _x6) {
 function _handleEvent() {
   _handleEvent = _asyncToGenerator(function* (event, userConfig) {
     config = _objectSpread(_objectSpread({}, defaultConfig), userConfig);
-    console.log("handleEvent -> config", config);
     const caller = getCaller(event);
     console.log("### Call from: ", caller);
 
