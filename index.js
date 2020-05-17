@@ -170,18 +170,22 @@ function _handleEvent() {
     console.log("### Call from: ", caller);
 
     if (caller === `dropbox`) {
+      const dbxWebHookChallenge = event.queryStringParameters.challenge;
+
       if (buildInProgress) {
         console.log("### Build already in progress. Aborting...");
-        return null;
+        return dbxWebHookChallenge;
       } else {
         buildInProgress = true;
         yield attemptBuild();
+        return dbxWebHookChallenge;
       }
     }
 
     if (caller === `netlify`) {
       console.log("### Starting Cleanup...");
       yield cleanUp();
+      return "Cleanup done";
     }
   });
   return _handleEvent.apply(this, arguments);

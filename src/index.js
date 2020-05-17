@@ -112,17 +112,21 @@ export async function handleEvent(event, userConfig) {
   console.log("### Call from: ", caller)
 
   if(caller === `dropbox`) {
+    const dbxWebHookChallenge = event.queryStringParameters.challenge
+
     if(buildInProgress) {
       console.log("### Build already in progress. Aborting...")
-      return null
+      return dbxWebHookChallenge
     } else {
       buildInProgress = true
       await attemptBuild()
+      return dbxWebHookChallenge
     }
   } 
 
   if(caller === `netlify`) {
     console.log("### Starting Cleanup...")
     await cleanUp()
+    return "Cleanup done"
   }
 }
