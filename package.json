@@ -1,6 +1,6 @@
 {
   "name": "dropbox-trigger-netlify",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "author": "Niklas May <post@niklas-may.de>",
   "main": "index.js",
