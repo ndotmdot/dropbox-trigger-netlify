@@ -81,7 +81,7 @@ function _attemptBuild() {
       callBuildHook();
     } else {
       buildInProgress = false;
-      console.log("### aborting...");
+      return console.log("### aborting...");
     }
   });
   return _attemptBuild.apply(this, arguments);

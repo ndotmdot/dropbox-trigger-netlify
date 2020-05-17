@@ -44,7 +44,7 @@ async function attemptBuild() {
     callBuildHook()
   } else {
     buildInProgress = false
-    console.log("### aborting...")
+    return console.log("### aborting...")
   }
 }
 
