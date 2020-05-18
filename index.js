@@ -78,7 +78,7 @@ function _attemptBuild() {
     console.log("### Files in build folder? ", hasFiles);
 
     if (hasFiles) {
-      callBuildHook();
+      yield callBuildHook();
     } else {
       buildInProgress = false;
       return console.log("### aborting...");

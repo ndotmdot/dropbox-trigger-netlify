@@ -42,7 +42,7 @@ async function attemptBuild() {
   console.log("### Files in build folder? ", hasFiles)
   
   if(hasFiles) {
-    callBuildHook()
+    await callBuildHook()
   } else {
     buildInProgress = false
     return console.log("### aborting...")
