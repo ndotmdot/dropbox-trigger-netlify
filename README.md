@@ -1,20 +1,16 @@
-# dropbox-trigger-netlify
+# dropbox Trigger Netlify
 [![npm version](https://badge.fury.io/js/dropbox-trigger-netlify.svg)](https://badge.fury.io/js/dropbox-trigger-netlify)
 
 This is a companion package for [gatsby-source-dropbox](https://www.npmjs.com/package/gatsby-source-dropbox) and enables automatic deploys of a Netlify hosted Gatsby site whenever there are files changes in a specific Dropbox folder.
 
-## Requirements
+This module is also implemented in [gatsby-starter-dropbox-workflow](https://github.com/niklas-may/gatsby-starter-dropbox-workflow/)
 
-Please make sure you have the following setup:
-* [Gatsby](https://www.gatsbyjs.org/) site
-* Hosted on [netlify](https://www.netlify.com/)
-* [gatsby-source-dropbox](https://www.npmjs.com/package/gatsby-source-dropbox) installed
+
+---
 
 ## How it works
 
-The package needs to be applied in a Netlify function in your Gatsby project. It will then listens to webhooks from your dropbox app and from your Netlify project.
-
-**1. The Module will watch your dropbox app folder for changes**
+**1. It watches your dropbox folder**
 It expects your Dropbox app to have the following folder structure:
 
 ```markdown
@@ -27,23 +23,28 @@ It expects your Dropbox app to have the following folder structure:
 
 Whenever you drop the *Content* folder into the  *_Update* folder the module will trigger a new deploy on Netlify. Make sure to do this only when the files in *Content* are uploaded to your Dropbox.
 
-**2. The module will move the files back**
+**2. It notifies your once the build is done**
 When Netlify finished building your site, the module will move the *Content* folder back to the root level. Whenever this happens, you know that your site was updated
+
+---
 
 ## Installation
 The get the webhooks working, it is important to do the installation in the correct order.
 
-**1. Prepare your Gatsby site** 
-Create a new Dropbox App and install [gatsby-source-dropbox](https://www.npmjs.com/package/gatsby-source-dropbox) plugin to your site. Find a detailed description on the plugin page. Make sure that you can query your Dropbox before you proceed.
+**1. Prepare your Gatsby site**
+Add [gatsby-source-dropbox](https://www.npmjs.com/package/gatsby-source-dropbox) to your Gatsby site.
 
 **2. Setup Netlify Functions**
-To use this module, you need to setup Netlify Functions in your Gatsby site. If you need help, follow this [tutorial](https://www.gatsbyjs.org/blog/2018-12-17-turning-the-static-dynamic/).
+[Setup guide](https://www.gatsbyjs.org/blog/2018-12-17-turning-the-static-dynamic/).
 
-**3. Install the module in the functions folder**
-`yarn add dropbox-trigger-netlify` or `npm install dropbox-trigger-netlify`
+**3. Install module in functions folder**
+`yarn add dropbox-trigger-netlify` 
+or
+`npm install dropbox-trigger-netlify`
+
 *Note:* Modules used in a Netlify Function need to be installed in the `src/functions` folder.
 
-**4. Create a new Function**
+**4. Create function**
 Create a new function called `syncDropbox.js` and add the following code:
 
 ```javaScript
@@ -67,23 +68,34 @@ exports.handler = async (event) => {
 }
 ```
 
-**6. Add environment Variables**
-Add the following variables to your .env file
+**5. Create Dropbox App
+Go to [Dropbox App Console](https://www.dropbox.com/developers/apps/create) and create a new app, choose your account type, only folder permission (recommended), choose a name and hit create.
 
-```text
-DROPBOX_TOKEN=[Your_Dropbox_Token]
-NETLIFY_BUILD_HOOK=[Your_Site_URL]/.netlify/functions/syncDropbox
+**6. Generate and Save Dropbox Token**
+Scroll on app page to "OAuth 2" and click "Generate Token". Copy and save token to `.env` file in your projects root directory.
+```
+DROPBOX_TOKEN=Your-Dropbox-Token
 ```
 
-**7. Deploy site to Netlify**
-If you want to change your URL, do it as soon as possible since this will have an effect on the Dropbox webhook.
+**7. Deploy Site to Netlify**
 
-**8. Add Environment Variables to Netlify**
-Add the same variables as you have done locally on Netlify under Settings > Build > Environment Variables 
+**8. Create a new Netlify Build Hook**
+Go to your Netlify project to settings/deploys#build-hooks and add a new hook
 
-## Todo
-https://docs.netlify.com/configure-builds/environment-variables/#deploy-urls-and-metadata
-https://open-api.netlify.com/?_ga=2.34122084.476848026.1591535860-414479974.1591535860#operation/listSiteDeploys
+**9. Save Build Hook to `.env` file**
+```
+DROPBOX_TOKEN=Your-Dropbox-Token
+NETLIFY_BUILD_HOOK=Your-Hook-You-Just-Added
+```
+
+**10. Create Netlify Deploy Notifications**
+Got to your Netlify project to settings/deploys#deploy-notifications and add an outgoing webhook for succeeded and failed builds pointing to `[you-site-url]/.netlify/functions/syncDropbox`
+
+**11. Add Environment Variables to Netlify**
+Add the environment variables from your `.env` file to netlify at settings/deploys#environment-variables
+
+**12. Add Webhook to Dropbox App**
+Go to [Dropbox App Console](https://www.dropbox.com/developers/apps) to you app and add a webhook pointing to you `NETLIFY_BUILD_HOOK`
 
 
 
