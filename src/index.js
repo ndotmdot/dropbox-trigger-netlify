@@ -1,7 +1,6 @@
 const Dropbox = require("dropbox/dist/Dropbox-sdk.min").Dropbox;
 const fetch = require('isomorphic-fetch'); // or another library of choice.
 
-let buildInProgress = false
 
 const defaultConfig = {
   dropboxToken: "",
@@ -15,16 +14,37 @@ let config = {}
 // ————————————————————————————————————————————————————
 
 async function callBuildHook() {
-  console.log("### Calling netlify buildhook")
+  console.info("### Calling netlify buildhook")
 
   const res = await fetch(`${config.buildHook}`, {
     method: 'post',
     headers: { 'Content-Type': 'application/json' },
   })
 
-  console.log(`### Buildhook response Status: ${res.status}, ${res.statusText}`)
+  console.info(` ## Buildhook response Status: ${res.status}, ${res.statusText}`)
 }
 
+async function getBuildStatus() {
+  const url = `https://api.netlify.com/api/v1/sites/${process.env.SITE_ID}/deploys`
+  const deploys = await fetch(url).then(res => res.json()).then(data => data.shift())
+  const { state, published_at } = deploys
+  
+  const publishTime = new Date(published_at)
+  const currentTime = new Date();
+  const minutesPassed = Math.round((currentTime - publishTime) / 1000) / 60
+  const buildTimeout = 0.5
+
+  console.info("### Checking build state... ")
+  console.info(" ## Current state: ", state)
+
+  if(minutesPassed < buildTimeout) {
+    console.info(` ## To early to rebuild.`)
+    console.info(` ## Builds are blocked for ${buildTimeout} minutes after last build.`)
+    console.info(` ## Last build finished ${minutesPassed} seconds ago.`)
+  }
+
+  return state === "ready" && minutesPassed > buildTimeout && true
+}
 
 // Dropbox Functions
 // ————————————————————————————————————————————————————
@@ -39,13 +59,12 @@ async function attemptBuild() {
   const files = await listFiles(dbx, `${config.dropboxBuildFolder}`)
   const hasFiles = files.entries.length > 0 && true
   
-  console.log("### Files in build folder? ", hasFiles)
+  console.info("### Files in build folder? ", hasFiles)
   
   if(hasFiles) {
     await callBuildHook()
   } else {
-    buildInProgress = false
-    return console.log("### aborting...")
+    return console.info(" ## aborting...")
   }
 }
 
@@ -69,7 +88,7 @@ async function moveFiles(dbx, entries){
   if (async_job_id) {  
     do {  
       response = await dbx.filesMoveBatchCheckV2({ async_job_id })  
-      console.log("Moving files: ", response)
+      console.info(" ## Moving files: ", JSON.stringify(response, null, 2))
     } while (response['.tag'] === 'in_progress')  
     return response
   }  
@@ -79,7 +98,6 @@ async function moveFiles(dbx, entries){
 // ————————————————————————————————————————————————————
 
 async function cleanUp() {
-  buildInProgress = true
 
   var dbx = new Dropbox({ accessToken: `${config.dropboxToken}`, fetch: fetch });
 
@@ -89,10 +107,8 @@ async function cleanUp() {
   if(hasFiles) {
     const moveEntries = createMoveEntries(files)
     await moveFiles(dbx, moveEntries)
-    buildInProgress = false
   } else {
-    console.log("### No files to cleanup")
-    buildInProgress = false
+    console.info(" ## No files to cleanup")
   }
 }
 
@@ -109,24 +125,26 @@ export async function handleEvent(event, userConfig) {
   config = {...defaultConfig, ...userConfig}
 
   const caller = getCaller(event)
-  console.log("### Call from: ", caller)
+  console.info("### Call from: ", caller)
+
+  const canBuild = await getBuildStatus()
 
   if(caller === `dropbox`) {
     const dbxWebHookChallenge = event.queryStringParameters.challenge
 
-    if(buildInProgress) {
-      console.log("### Build already in progress. Aborting...")
+    if(canBuild) {
+      await attemptBuild()
       return dbxWebHookChallenge
     } else {
-      buildInProgress = true
-      await attemptBuild()
+      console.info("### Aborting...")
       return dbxWebHookChallenge
     }
   } 
 
   if(caller === `netlify`) {
-    console.log("### Starting Cleanup...")
+    console.info("### Starting Cleanup...")
     await cleanUp()
+    console.info(" ## Cleanup done!")
     return "Cleanup done"
   }
 }
