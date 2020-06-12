@@ -41,7 +41,7 @@ function _callBuildHook() {
         'Content-Type': 'application/json'
       }
     });
-    console.info(`### Buildhook response Status: ${res.status}, ${res.statusText}`);
+    console.info(` ## Buildhook response Status: ${res.status}, ${res.statusText}`);
   });
   return _callBuildHook.apply(this, arguments);
 }
@@ -61,16 +61,17 @@ function _getBuildStatus() {
     const publishTime = new Date(published_at);
     const currentTime = new Date();
     const minutesPassed = Math.round((currentTime - publishTime) / 1000) / 60;
+    const buildTimeout = 0.5;
     console.info("### Checking build state... ");
     console.info(" ## Current state: ", state);
 
-    if (published_at !== null) {
-      console.info(" ## Current time: ", currentTime);
-      console.info(" ## Last publish: ", publishTime);
-      console.info(" ## Minutes since last publish: ", minutesPassed);
+    if (minutesPassed < buildTimeout) {
+      console.info(` ## To early to rebuild.`);
+      console.info(` ## Builds are blocked for ${buildTimeout} minutes after last build.`);
+      console.info(` ## Last build finished ${minutesPassed} seconds ago.`);
     }
 
-    return state === "ready" && minutesPassed > 1 && true;
+    return state === "ready" && minutesPassed > buildTimeout && true;
   });
   return _getBuildStatus.apply(this, arguments);
 }
@@ -106,7 +107,7 @@ function _attemptBuild() {
     if (hasFiles) {
       yield callBuildHook();
     } else {
-      return console.info("### aborting...");
+      return console.info(" ## aborting...");
     }
   });
   return _attemptBuild.apply(this, arguments);
@@ -141,7 +142,7 @@ function _moveFiles() {
         response = yield dbx.filesMoveBatchCheckV2({
           async_job_id
         });
-        console.info("Moving files: ", response);
+        console.info(" ## Moving files: ", JSON.stringify(response, null, 2));
       } while (response['.tag'] === 'in_progress');
 
       return response;
@@ -167,7 +168,7 @@ function _cleanUp() {
       const moveEntries = createMoveEntries(files);
       yield moveFiles(dbx, moveEntries);
     } else {
-      console.info("### No files to cleanup");
+      console.info(" ## No files to cleanup");
     }
   });
   return _cleanUp.apply(this, arguments);
@@ -191,32 +192,23 @@ function _handleEvent() {
     const caller = getCaller(event);
     console.info("### Call from: ", caller);
     const canBuild = yield getBuildStatus();
-    console.info("handleEvent -> canBuild", canBuild);
 
     if (caller === `dropbox`) {
       const dbxWebHookChallenge = event.queryStringParameters.challenge;
 
       if (canBuild) {
-        // buildInProgress = true
         yield attemptBuild();
         return dbxWebHookChallenge;
       } else {
-        console.info("### Build already in progress. Aborting...");
+        console.info("### Aborting...");
         return dbxWebHookChallenge;
-      } // if(canBuild) {
-      //   console.info("### Build already in progress. Aborting...")
-      //   return dbxWebHookChallenge
-      // } else {
-      //   // buildInProgress = true
-      //   await attemptBuild()
-      //   return dbxWebHookChallenge
-      // }
-
+      }
     }
 
     if (caller === `netlify`) {
       console.info("### Starting Cleanup...");
       yield cleanUp();
+      console.info(" ## Cleanup done!");
       return "Cleanup done";
     }
   });
