@@ -20,7 +20,6 @@ const Dropbox = require("dropbox/dist/Dropbox-sdk.min").Dropbox;
 const fetch = require('isomorphic-fetch'); // or another library of choice.
 
 
-let buildInProgress = false;
 const defaultConfig = {
   dropboxToken: "",
   dropboxBuildFolder: "/_Update",
@@ -31,22 +30,52 @@ let config = {}; // Netlify Functions
 
 function callBuildHook() {
   return _callBuildHook.apply(this, arguments);
+}
+
+function _callBuildHook() {
+  _callBuildHook = _asyncToGenerator(function* () {
+    console.info("### Calling netlify buildhook");
+    console.info("### Just Kidding"); // const res = await fetch(`${config.buildHook}`, {
+    //   method: 'post',
+    //   headers: { 'Content-Type': 'application/json' },
+    // })
+
+    const res = {
+      status: 200,
+      statusText: "All fake, all good!"
+    };
+    console.info(`### Buildhook response Status: ${res.status}, ${res.statusText}`);
+  });
+  return _callBuildHook.apply(this, arguments);
+}
+
+function getBuildStatus() {
+  return _getBuildStatus.apply(this, arguments);
 } // Dropbox Functions
 // ————————————————————————————————————————————————————
 
 
-function _callBuildHook() {
-  _callBuildHook = _asyncToGenerator(function* () {
-    console.log("### Calling netlify buildhook");
-    const res = yield fetch(`${config.buildHook}`, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    console.log(`### Buildhook response Status: ${res.status}, ${res.statusText}`);
+function _getBuildStatus() {
+  _getBuildStatus = _asyncToGenerator(function* () {
+    const url = `https://api.netlify.com/api/v1/sites/${process.env.SITE_ID}/deploys`;
+    const deploys = yield fetch(url).then(res => res.json()).then(data => data.shift());
+    const state = deploys.state,
+          published_at = deploys.published_at;
+    const publishTime = new Date(published_at);
+    const currentTime = new Date();
+    const minutesPassed = Math.round((currentTime - publishTime) / 1000) / 60;
+    console.info("### Checking build state... ");
+    console.info(" ## Current state: ", state);
+
+    if (published_at !== null) {
+      console.info(" ## Current time: ", currentTime);
+      console.info(" ## Last publish: ", publishTime);
+      console.info(" ## Minutes since last publish: ", minutesPassed);
+    }
+
+    return state === "ready" && minutesPassed > 1 && true;
   });
-  return _callBuildHook.apply(this, arguments);
+  return _getBuildStatus.apply(this, arguments);
 }
 
 function listFiles(_x, _x2) {
@@ -75,13 +104,12 @@ function _attemptBuild() {
     });
     const files = yield listFiles(dbx, `${config.dropboxBuildFolder}`);
     const hasFiles = files.entries.length > 0 && true;
-    console.log("### Files in build folder? ", hasFiles);
+    console.info("### Files in build folder? ", hasFiles);
 
     if (hasFiles) {
       yield callBuildHook();
     } else {
-      buildInProgress = false;
-      return console.log("### aborting...");
+      return console.info("### aborting...");
     }
   });
   return _attemptBuild.apply(this, arguments);
@@ -116,7 +144,7 @@ function _moveFiles() {
         response = yield dbx.filesMoveBatchCheckV2({
           async_job_id
         });
-        console.log("Moving files: ", response);
+        console.info("Moving files: ", response);
       } while (response['.tag'] === 'in_progress');
 
       return response;
@@ -131,7 +159,6 @@ function cleanUp() {
 
 function _cleanUp() {
   _cleanUp = _asyncToGenerator(function* () {
-    buildInProgress = true;
     var dbx = new Dropbox({
       accessToken: `${config.dropboxToken}`,
       fetch: fetch
@@ -142,10 +169,8 @@ function _cleanUp() {
     if (hasFiles) {
       const moveEntries = createMoveEntries(files);
       yield moveFiles(dbx, moveEntries);
-      buildInProgress = false;
     } else {
-      console.log("### No files to cleanup");
-      buildInProgress = false;
+      console.info("### No files to cleanup");
     }
   });
   return _cleanUp.apply(this, arguments);
@@ -167,23 +192,33 @@ function _handleEvent() {
   _handleEvent = _asyncToGenerator(function* (event, userConfig) {
     config = _objectSpread(_objectSpread({}, defaultConfig), userConfig);
     const caller = getCaller(event);
-    console.log("### Call from: ", caller);
+    console.info("### Call from: ", caller);
+    const canBuild = yield getBuildStatus();
+    console.info("handleEvent -> canBuild", canBuild);
 
     if (caller === `dropbox`) {
       const dbxWebHookChallenge = event.queryStringParameters.challenge;
 
-      if (buildInProgress) {
-        console.log("### Build already in progress. Aborting...");
-        return dbxWebHookChallenge;
-      } else {
-        buildInProgress = true;
+      if (canBuild) {
+        // buildInProgress = true
         yield attemptBuild();
         return dbxWebHookChallenge;
-      }
+      } else {
+        console.info("### Build already in progress. Aborting...");
+        return dbxWebHookChallenge;
+      } // if(canBuild) {
+      //   console.info("### Build already in progress. Aborting...")
+      //   return dbxWebHookChallenge
+      // } else {
+      //   // buildInProgress = true
+      //   await attemptBuild()
+      //   return dbxWebHookChallenge
+      // }
+
     }
 
     if (caller === `netlify`) {
-      console.log("### Starting Cleanup...");
+      console.info("### Starting Cleanup...");
       yield cleanUp();
       return "Cleanup done";
     }
