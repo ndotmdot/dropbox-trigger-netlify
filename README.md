@@ -68,7 +68,7 @@ exports.handler = async (event) => {
 }
 ```
 
-**5. Create Dropbox App
+**5. Create Dropbox App**
 Go to [Dropbox App Console](https://www.dropbox.com/developers/apps/create) and create a new app, choose your account type, only folder permission (recommended), choose a name and hit create.
 
 **6. Generate and Save Dropbox Token**
@@ -80,7 +80,7 @@ DROPBOX_TOKEN=Your-Dropbox-Token
 **7. Deploy Site to Netlify**
 
 **8. Create a new Netlify Build Hook**
-Go to your Netlify project to settings/deploys#build-hooks and add a new hook
+Go to your Netlify project to `settings/deploys#build-hooks` and add a new hook
 
 **9. Save Build Hook to `.env` file**
 ```
@@ -89,7 +89,7 @@ NETLIFY_BUILD_HOOK=Your-Hook-You-Just-Added
 ```
 
 **10. Create Netlify Deploy Notifications**
-Got to your Netlify project to settings/deploys#deploy-notifications and add an outgoing webhook for succeeded and failed builds pointing to `[you-site-url]/.netlify/functions/syncDropbox`
+Got to your Netlify project to `settings/deploys#deploy-notifications` and add an outgoing webhook for succeeded and failed builds pointing to `[you-site-url]/.netlify/functions/syncDropbox`
 
 **11. Add Environment Variables to Netlify**
 Add the environment variables from your `.env` file to netlify at settings/deploys#environment-variables
