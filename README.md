@@ -6,26 +6,26 @@ This is a companion package for [gatsby-source-dropbox](https://www.npmjs.com/pa
 ## Requirements
 
 Please make sure you have the following setup:
-* [Gatsby](https://www.gatsbyjs.org/) app
+* [Gatsby](https://www.gatsbyjs.org/) site
 * Hosted on [netlify](https://www.netlify.com/)
 * [gatsby-source-dropbox](https://www.npmjs.com/package/gatsby-source-dropbox) installed
 
 ## How it works
 
-The package needs to be applied in a Netlify function in your Gatsby app. It will then listens to webhooks from your dropbox app and from your Netlify project.
+The package needs to be applied in a Netlify function in your Gatsby project. It will then listens to webhooks from your dropbox app and from your Netlify project.
 
 **1. The Module will watch your dropbox app folder for changes**
 It expects your Dropbox app to have the following folder structure:
 
 ```markdown
-+-- Dropbox App Root
++-- Your Dropbox App Root Name
 |   +-- _Update
 |   +-- Content
 |   |   +--Whatever Files you need.md
 |   |   +--Whatever Folders you need
 ```
 
-Whenever you drop the *Content* folder into the  *_Update* folder the module will trigger a new deploy on Netlify. Make sure to this only once the files in *Content* are all synced to Dropbox.
+Whenever you drop the *Content* folder into the  *_Update* folder the module will trigger a new deploy on Netlify. Make sure to do this only when the files in *Content* are uploaded to your Dropbox.
 
 **2. The module will move the files back**
 When Netlify finished building your site, the module will move the *Content* folder back to the root level. Whenever this happens, you know that your site was updated
@@ -80,6 +80,10 @@ If you want to change your URL, do it as soon as possible since this will have a
 
 **8. Add Environment Variables to Netlify**
 Add the same variables as you have done locally on Netlify under Settings > Build > Environment Variables 
+
+## Todo
+https://docs.netlify.com/configure-builds/environment-variables/#deploy-urls-and-metadata
+https://open-api.netlify.com/?_ga=2.34122084.476848026.1591535860-414479974.1591535860#operation/listSiteDeploys
 
 
 
