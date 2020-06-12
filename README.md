@@ -1,4 +1,4 @@
-# dropbox Trigger Netlify
+# Dropbox Trigger Netlify
 [![npm version](https://badge.fury.io/js/dropbox-trigger-netlify.svg)](https://badge.fury.io/js/dropbox-trigger-netlify)
 
 This is a companion package for [gatsby-source-dropbox](https://www.npmjs.com/package/gatsby-source-dropbox) and enables automatic deploys of a Netlify hosted Gatsby site whenever there are files changes in a specific Dropbox folder.
