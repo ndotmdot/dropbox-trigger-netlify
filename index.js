@@ -35,15 +35,12 @@ function callBuildHook() {
 function _callBuildHook() {
   _callBuildHook = _asyncToGenerator(function* () {
     console.info("### Calling netlify buildhook");
-    console.info("### Just Kidding"); // const res = await fetch(`${config.buildHook}`, {
-    //   method: 'post',
-    //   headers: { 'Content-Type': 'application/json' },
-    // })
-
-    const res = {
-      status: 200,
-      statusText: "All fake, all good!"
-    };
+    const res = yield fetch(`${config.buildHook}`, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     console.info(`### Buildhook response Status: ${res.status}, ${res.statusText}`);
   });
   return _callBuildHook.apply(this, arguments);
