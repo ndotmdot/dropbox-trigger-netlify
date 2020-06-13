@@ -24,7 +24,7 @@ async function callBuildHook() {
   console.info(` ## Buildhook response Status: ${res.status}, ${res.statusText}`)
 }
 
-async function getBuildStatus() {
+async function checkIfReadyForBuild() {
   const url = `https://api.netlify.com/api/v1/sites/${process.env.SITE_ID}/deploys`
   const deploys = await fetch(url).then(res => res.json()).then(data => data.shift())
   const { state, published_at } = deploys
@@ -127,12 +127,10 @@ export async function handleEvent(event, userConfig) {
   const caller = getCaller(event)
   console.info("### Call from: ", caller)
 
-  const canBuild = await getBuildStatus()
-
   if(caller === `dropbox`) {
     const dbxWebHookChallenge = event.queryStringParameters.challenge
 
-    if(canBuild) {
+    if(await checkIfReadyForBuild()) {
       await attemptBuild()
       return dbxWebHookChallenge
     } else {

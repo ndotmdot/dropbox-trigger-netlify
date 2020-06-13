@@ -46,14 +46,14 @@ function _callBuildHook() {
   return _callBuildHook.apply(this, arguments);
 }
 
-function getBuildStatus() {
-  return _getBuildStatus.apply(this, arguments);
+function checkIfReadyForBuild() {
+  return _checkIfReadyForBuild.apply(this, arguments);
 } // Dropbox Functions
 // ————————————————————————————————————————————————————
 
 
-function _getBuildStatus() {
-  _getBuildStatus = _asyncToGenerator(function* () {
+function _checkIfReadyForBuild() {
+  _checkIfReadyForBuild = _asyncToGenerator(function* () {
     const url = `https://api.netlify.com/api/v1/sites/${process.env.SITE_ID}/deploys`;
     const deploys = yield fetch(url).then(res => res.json()).then(data => data.shift());
     const state = deploys.state,
@@ -73,7 +73,7 @@ function _getBuildStatus() {
 
     return state === "ready" && minutesPassed > buildTimeout && true;
   });
-  return _getBuildStatus.apply(this, arguments);
+  return _checkIfReadyForBuild.apply(this, arguments);
 }
 
 function listFiles(_x, _x2) {
@@ -191,12 +191,11 @@ function _handleEvent() {
     config = _objectSpread(_objectSpread({}, defaultConfig), userConfig);
     const caller = getCaller(event);
     console.info("### Call from: ", caller);
-    const canBuild = yield getBuildStatus();
 
     if (caller === `dropbox`) {
       const dbxWebHookChallenge = event.queryStringParameters.challenge;
 
-      if (canBuild) {
+      if (yield checkIfReadyForBuild()) {
         yield attemptBuild();
         return dbxWebHookChallenge;
       } else {
